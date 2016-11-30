@@ -1,0 +1,20 @@
+{
+  "name": "allex_leveldbbanklib",
+  "version": "1.0.0",
+  "description": "AllexJS lib with the LevelDB bank implementation",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.hers.rs:allex_libs/leveldbbank"
+  },
+  "keywords": [
+    "ecosystem:AllexJS",
+    "leveldb",
+    "bank"
+  ],
+  "author": "HERS Belgrade",
+  "license": "ISC"
+}
