@@ -70,7 +70,7 @@ function createMixin (execlib, leveldblib, LevelDBWithLog) {
       //console.log('chargeallowance is ok', balance, '>', amount);
       return true;
     }
-    throw new lib.Error('INSUFFICIENT_FUNDS', balance);
+    throw new lib.Error('INSUFFICIENT_FUNDS', 'Cannot charge amount '+amount+' from an account that currently has balance '+balance);
   }
   BankMixin.prototype.charge = function (username, amount, referencearry) {
     return this.locks.run(username, this.chargeJob(username, amount, referencearry));
