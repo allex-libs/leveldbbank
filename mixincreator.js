@@ -1,12 +1,13 @@
 var randomBytes = require('crypto').randomBytes,
   Path = require('path');
 
-function createMixin (execlib, leveldblib, LevelDBWithLog) {
+function createMixin (execlib, leveldblib, leveldbwithloglib) {
   'use strict';
 
   var lib = execlib.lib,
     q = lib.q,
-    qlib = lib.qlib;
+    qlib = lib.qlib,
+    LevelDBWithLog = leveldbwithloglib.LevelDBWithLog;
 
   function BankMixin (prophash) {
     prophash.kvstorage = {

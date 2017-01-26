@@ -1,10 +1,11 @@
-function createBank(execlib, LevelDBWithLog, leveldblib) {
+function createBank(execlib, leveldbwithloglib, leveldblib) {
   'use strict';
 
   var lib = execlib.lib,
     q = lib.q,
     qlib = lib.qlib,
-    BankMixin = require('./mixincreator')(execlib, leveldblib, LevelDBWithLog);
+    LevelDBWithLog = leveldbwithloglib.LevelDBWithLog,
+    BankMixin = require('./mixincreator')(execlib, leveldblib, leveldbwithloglib);
 
   function Bank (prophash) {
     BankMixin.call(this, prophash);
@@ -19,7 +20,8 @@ function createBank(execlib, LevelDBWithLog, leveldblib) {
 
   return q({
     BankMixin: BankMixin,
-    Bank: Bank
+    Bank: Bank,
+    Hook: leveldbwithloglib.Hook
   });
 }
 
