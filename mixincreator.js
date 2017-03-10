@@ -65,13 +65,16 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
     return this.del(username);
   };
 
-  function chargeallowance(balance, amount) {
+  function chargeallowance(username, balance, amount) {
     //console.log('chargeallowance?', record, amount);
     if (balance >= amount) {
       //console.log('chargeallowance is ok', balance, '>', amount);
+      username = null;
       return true;
     }
-    throw new lib.Error('INSUFFICIENT_FUNDS', 'Cannot charge amount '+amount+' from an account that currently has balance '+balance);
+    var errstring = 'Cannot charge amount '+amount+' from account '+username+' that currently has balance '+balance;
+    username = null;
+    throw new lib.Error('INSUFFICIENT_FUNDS', errstring);
   }
   BankMixin.prototype.charge = function (username, amount, referencearry) {
     return this.locks.run(username, this.chargeJob(username, amount, referencearry));
@@ -93,7 +96,7 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
           amount = null;
           return 0;
         },
-        criterionfunction: chargeallowance
+        criterionfunction: chargeallowance.bind(null, username)
       },
       ret;
     if (!username) {
@@ -124,7 +127,7 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
     }
     var decoptions = {
       defaultrecord: function () {throw new lib.Error('NO_ACCOUNT_YET');},
-      criterionfunction: chargeallowance
+      criterionfunction: chargeallowance.bind(null, username)
     };
     return this.locks.run(username, new qlib.PromiseChainerJob([
       this.kvstorage.dec.bind(this.kvstorage, username, null, amount, decoptions),
