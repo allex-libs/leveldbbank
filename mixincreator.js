@@ -448,6 +448,13 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
     return ret;
   };
 
+  BankMixin.prototype.queryReservations = function (filterdesc, defer, starteddefer) {
+    if (!this.reservations) {
+      return q.reject(new lib.Error('RESERVATIONS_NOT_CREATED', 'Reservations storage does not exist at the moment'));
+    }
+    return this.reservations.query(filterdesc, defer, starteddefer);
+  };
+
   BankMixin.prototype.dumpToConsole = function (options) {
     console.log('accounts');
     return this.kvstorage.dumpToConsole(options).then(
@@ -492,6 +499,7 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
       'resetToJobTasks',
       'onAccountForResetTo',
       'emptyAccountForResetTo',
+      'queryReservations',
       'dumpToConsole',
       'referenceUserNames'
     );
