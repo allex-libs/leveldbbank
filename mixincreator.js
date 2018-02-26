@@ -9,6 +9,16 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
     qlib = lib.qlib,
     LevelDBWithLog = leveldbwithloglib.LevelDBWithLog;
 
+  function pathjoiner (path1, item) {
+    var p;
+    if (lib.isArray(path1)) {
+      p = path1.slice();
+      p.push(item);
+      return Path.join.apply(Path, p);
+    }
+    return Path.join(path1, item);
+  }
+
   function BankMixin (prophash) {
     prophash.kvstorage = {
       dbname: 'accounts.db',
@@ -30,13 +40,25 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
     this.reservations = null;
   };
 
+  function superDropper (bm) {
+    return LevelDBWithLog.prototype.drop.call(bm);
+  };
+  BankMixin.prototype.drop = function () {
+    var sd;
+    if (this.reservations) {
+      sd = superDropper.bind(null, this);
+      return qlib.promise2decision(this.reservations.drop(), sd, sd);
+    }
+    return superDropper(this);
+  };
+
   BankMixin.prototype.createStartDBPromises = function () {
     var rd = q.defer();
 
     this.logopts.dbcreationoptions.bufferValueEncoding = ['String', 'Int64BE', 'UInt64BE'].concat(this.referenceUserNames).concat(['UInt64BE']); //username, amount, balance after txn; timestamp
 
     this.reservations = new (leveldblib.DBArray)({
-      dbname: Path.join(this.dbdirpath, 'reservations.db'),
+      dbname: pathjoiner(this.dbdirpath, 'reservations.db'),
       dbcreationoptions: {
         bufferValueEncoding: ['String', 'UInt64BE'].concat(this.referenceUserNames).concat(['UInt64BE', 'String'])
         //username, amount (>=0); timestamp, secretstring
@@ -469,6 +491,7 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
 
   BankMixin.addMethods = function (klass) {
     lib.inheritMethods(klass, BankMixin,
+      'drop',
       'createStartDBPromises',
       'readAccount',
       'readAccountWDefault',
