@@ -87,6 +87,13 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
     return this.del(username);
   };
 
+  BankMixin.prototype.purgeAccount = function (username, referencearry) {
+    return this.locks.run(new qlib.PromiseChainerJob([
+      this.emptyAccount(username, referencearry),
+      this.closeAccount.bind(this, username)
+    ]));
+  };
+
   function chargeallowance(username, balance, amount) {
     //console.log('chargeallowance?', record, amount);
     if (balance >= amount) {
@@ -122,10 +129,10 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
       },
       ret;
     if (!username) {
-      return [q.reject(new lib.Error('NO_USERNAME'))];
+      return [q.reject.bind(q, new lib.Error('NO_USERNAME'))];
     }
     if (!lib.isNumber(amount)) {
-      return [q.reject(new lib.Error('AMOUNT_MUST_BE_A_NUMBER'))];
+      return [q.reject.bind(q, new lib.Error('AMOUNT_MUST_BE_A_NUMBER'))];
     }
     ret = [
       this.kvstorage.dec.bind(this.kvstorage, username, null, amount, decoptions),
@@ -138,6 +145,25 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
   };
   BankMixin.prototype.chargeJob = function (username, amount, referencearry) {
     return new qlib.PromiseChainerJob(this.chargeJobTasks(username, amount, referencearry));
+  };
+
+  BankMixin.prototype.emptyAccount = function (username, doemptyreference) {
+    return this.locks.run(username, this.emptyAccountJob(username, doemptyreference));
+  };
+  BankMixin.prototype.emptyAccountJob = function (username, doemptyreference) {
+    return qlib.PromiseChainerJob([
+      this.readAccount.bind(this),
+      this.onAccountReadForEmptying.bind(this, username, doemptyreference)
+    ]);
+  };
+  function emptyAccountReporter (originalbalance, emptyingresult) {
+    emptyingresult[emptyingresult.length-1] = originalbalance;
+    return q(emptyingresult);
+  }
+  BankMixin.prototype.onAccountReadForEmptying = function (username, doemptyreference, balance) {
+    return this.charge(username, balance, doemptyreference).then(
+      emptyAccountReporter.bind(null, balance)
+    );
   };
 
   BankMixin.prototype.reserve = function (username, amount, referencearry) {
@@ -229,6 +255,7 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
     ).then(
       function (reserveresult) {
         rt(username, amount, referencearry, [0, reserveresult[2]]);
+        rt = null;
         username = null;
         amount = null;
         referencearry = null;
@@ -497,9 +524,13 @@ function createMixin (execlib, leveldblib, leveldbwithloglib) {
       'readAccountWDefault',
       'readAccountSafe',
       'closeAccount',
+      'purgeAccount',
       'charge',
       'chargeJobTasks',
       'chargeJob',
+      'emptyAccount',
+      'emptyAccountJob',
+      'onAccountReadForEmptying',
       'reserve',
       'commitReservation',
       'partiallyCommitReservation',
