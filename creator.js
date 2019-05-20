@@ -18,11 +18,11 @@ function createBank(execlib, leveldbwithloglib, leveldblib) {
     BankMixin.prototype.destroy.call(this);
   };
 
-  return q({
+  return {
     BankMixin: BankMixin,
     Bank: Bank,
     Hook: leveldbwithloglib.Hook
-  });
+  };
 }
 
 

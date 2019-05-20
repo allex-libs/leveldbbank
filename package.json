@@ -1,6 +1,6 @@
 {
   "name": "allex_leveldbbanklib",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "AllexJS lib with the LevelDB bank implementation",
   "main": "index.js",
   "scripts": {

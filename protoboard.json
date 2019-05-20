@@ -1,0 +1,8 @@
+{
+  "browserify": {
+    "dist/browserified.js": "browserify.js"
+  },
+  "dependencies": {
+    "js": ["allex:leveldb:lib", "allex:leveldbwithlog:lib"]
+  }
+}
